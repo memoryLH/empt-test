@@ -44,6 +44,14 @@
       var storedScore;
 
       try {
+        if (typeof window.getHighScore === 'function') {
+          return Number.parseInt(window.getHighScore(), 10) || 0;
+        }
+      } catch (error) {
+        // Fall through to the direct localStorage fallback below.
+      }
+
+      try {
         storedScore = window.localStorage && window.localStorage.getItem(HIGH_SCORE_KEY);
       } catch (error) {
         storedScore = null;
@@ -53,6 +61,15 @@
     }
 
     function saveHighScore() {
+      try {
+        if (typeof window.setHighScore === 'function') {
+          window.setHighScore(highScore);
+          return;
+        }
+      } catch (error) {
+        // Fall through to the direct localStorage fallback below.
+      }
+
       try {
         if (window.localStorage) {
           window.localStorage.setItem(HIGH_SCORE_KEY, String(highScore));
@@ -136,14 +153,14 @@
     }
 
     function updateScoreDisplay() {
-      scoreDisplay.textContent = 'Score: ' + score;
-      highScoreDisplay.textContent = 'High Score: ' + highScore;
+      scoreDisplay.textContent = '分数: ' + score;
+      highScoreDisplay.textContent = '最高分: ' + highScore;
     }
 
     function updateControls() {
       startBtn.disabled = status === STATUS_RUNNING || status === STATUS_PAUSED;
       pauseBtn.disabled = status !== STATUS_RUNNING && status !== STATUS_PAUSED;
-      pauseBtn.textContent = status === STATUS_PAUSED ? 'Resume' : 'Pause';
+      pauseBtn.textContent = status === STATUS_PAUSED ? '继续' : '暂停';
       restartBtn.disabled = false;
     }
 
@@ -181,9 +198,9 @@
       });
 
       if (status === STATUS_PAUSED) {
-        drawOverlay('Paused');
+        drawOverlay('已暂停');
       } else if (status === STATUS_ENDED) {
-        drawOverlay('Game Over');
+        drawOverlay('游戏结束');
       }
     }
 
@@ -200,6 +217,12 @@
     }
 
     function endGame() {
+      if (score > highScore) {
+        highScore = score;
+      }
+
+      saveHighScore();
+      updateScoreDisplay();
       status = STATUS_ENDED;
       stopLoop();
       updateControls();
@@ -232,7 +255,6 @@
 
         if (score > highScore) {
           highScore = score;
-          saveHighScore();
         }
 
         generateFood();
