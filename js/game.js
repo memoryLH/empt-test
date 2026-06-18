@@ -11,13 +11,6 @@
   var STATUS_PAUSED = 'paused';
   var STATUS_ENDED = 'ended';
 
-  var DIRECTIONS = {
-    ArrowUp: { x: 0, y: -1 },
-    ArrowDown: { x: 0, y: 1 },
-    ArrowLeft: { x: -1, y: 0 },
-    ArrowRight: { x: 1, y: 0 },
-  };
-
   function initGame() {
     var canvas = document.getElementById('gameCanvas');
     var scoreDisplay = document.getElementById('scoreDisplay');
@@ -301,22 +294,6 @@
       }
     }
 
-    function handleKeyDown(event) {
-      var requestedDirection = DIRECTIONS[event.key];
-
-      if (!requestedDirection) {
-        return;
-      }
-
-      if (status === STATUS_RUNNING || status === STATUS_PAUSED) {
-        event.preventDefault();
-      }
-
-      if (status === STATUS_RUNNING) {
-        updateDirection(requestedDirection);
-      }
-    }
-
     function getState() {
       return {
         status: status,
@@ -337,14 +314,18 @@
     startBtn.addEventListener('click', startGame);
     pauseBtn.addEventListener('click', togglePause);
     restartBtn.addEventListener('click', restartGame);
-    window.addEventListener('keydown', handleKeyDown);
 
     window.snakeGame = {
       start: startGame,
       pause: togglePause,
       restart: restartGame,
+      updateDirection: updateDirection,
       getState: getState,
     };
+
+    if (typeof window.initInput === 'function') {
+      window.initInput();
+    }
 
     resetRound();
     updateControls();
